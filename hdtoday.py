@@ -3,6 +3,7 @@ import logging
 import re
 from datetime import datetime, timedelta
 from pathlib import Path
+from urllib.parse import urlparse
 
 import requests
 from slugify import slugify
@@ -111,6 +112,7 @@ class HDToday:
             "Starring": "cast",
             "Creator": "director",
             "Created by": "director",
+            "Director": "director",
             "Country": "country",
             # "Released": "year",
             "Year": "year",
@@ -321,26 +323,44 @@ class HDToday:
 
         return res
 
+    def get_server_name_from_link(self, link: str) -> str:
+        netloc = urlparse(link).netloc
+
+        return netloc
+
     def insert_player(self, movie_id: int) -> None:
         logging.info(
             f"Updating player for movie {self.film['post_title']} with ID: {movie_id}"
         )
 
+        episode_server = []
+
+        servers_link = self.film.get("servers_link", [])
+        if self.film.get("tmdb_id", ""):
+            servers_link.append(
+                f"https://vidsrc.me/embed/{self.film.get('tmdb_id', '')}"
+            )
+
+        servers_link = list(set(servers_link))
+
+        for index, link in enumerate(servers_link):
+            episode_server.append(
+                {
+                    "server_name": f"Server {index + 1}",
+                    "server_type": "embed",
+                    "server_link": f"{link}/",
+                }
+            )
+
         data = [
             {
-                "season_name": "1",
+                "season_name": "",
                 "episode_list": [
                     {
                         "ep_name": "",
-                        "ep_num": "1",
+                        "ep_num": "",
                         "ep_time": 0,
-                        "episode_server": [
-                            {
-                                "server_name": CONFIG.VIDSRC_SERVER_NAME,
-                                "server_type": "embed",
-                                "server_link": f"https://vidsrc.me/embed/{self.film.get('tmdb_id', '')}/",
-                            }
-                        ],
+                        "episode_server": episode_server,
                     }
                 ],
             }

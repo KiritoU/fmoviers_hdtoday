@@ -1,3 +1,5 @@
+import re
+import string
 from datetime import datetime, timedelta
 from pathlib import Path
 from time import sleep
@@ -54,6 +56,31 @@ class Helper:
             return trailer_id
         except:
             return ""
+
+    def get_servers_link(self, soup: BeautifulSoup) -> list:
+        res = []
+        try:
+            scripts = soup.find_all("script")
+            for script in scripts:
+                script_text = script.text
+                if '$(".server' not in script_text:
+                    continue
+
+                jquerys = script_text.split('$(".server')
+
+                for jquery in jquerys:
+                    if jquery and jquery[0] in string.digits:
+                        urls = re.findall(
+                            r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+                            jquery,
+                        )
+                        urls = [url.strip("/") for url in urls]
+                        res.append(*urls)
+
+        except:
+            pass
+
+        return res
 
     def get_watching_href_and_fondo(self, soup: BeautifulSoup) -> list:
         try:
@@ -225,6 +252,7 @@ class Helper:
                 tmdb_id = href.strip("/").split("/")[-1]
                 if tmdb_id and tmdb_id != "title":
                     extra_info["tmdb_id"] = tmdb_id
+                    print(f"Found tmdb_id: {tmdb_id}")
         except:
             pass
 

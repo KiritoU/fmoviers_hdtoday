@@ -116,11 +116,10 @@ class Crawler:
         cover_src = helper.get_cover_url(href=href, detail_page_infor=detail_page_infor)
 
         trailer_id = helper.get_trailer_id(soup)
-        extra_info = helper.get_extra_info(detail_page_infor=detail_page_infor)
 
-        if not extra_info.get("tmdb_id", ""):
-            # TODO: add 2nd way to get tmdb_id
-            print(f"[-] Missing tmdb_id for href {href}")
+        servers_link = helper.get_servers_link(soup)
+
+        extra_info = helper.get_extra_info(detail_page_infor=detail_page_infor)
 
         if not title:
             helper.error_log(
@@ -135,6 +134,7 @@ class Crawler:
             "post_type": post_type,
             "trailer_id": trailer_id,
             "cover_src": cover_src,
+            "servers_link": servers_link,
             "extra_info": extra_info,
         }
 
@@ -187,7 +187,7 @@ class Crawler:
 
 
 if __name__ == "__main__":
-    # Crawler().crawl_page(url=CONFIG.FMOVIERS_TVSHOWS_PAGE + "/page/2/")
+    Crawler().crawl_page(url=CONFIG.FMOVIERS_TVSHOWS_PAGE + "/page/2/")
     Crawler().crawl_page(
         url=CONFIG.FMOVIERS_MOVIES_PAGE + "/page/1/", post_type=CONFIG.TYPE_MOVIE
     )
